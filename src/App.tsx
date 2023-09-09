@@ -1,25 +1,20 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { ChakraProvider, Container } from "@chakra-ui/react";
+import { TableSelector } from "components";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ChakraProvider>
+      <Container maxW="4xl" borderWidth="1px" borderRadius="lg" p="4" mt="4">
+        <TableSelector
+          options={[
+            { label: "Accounts", value: "accounts" },
+            { label: "Sales", value: "sales" },
+          ]}
+          onSelect={(table) => console.log("selected", table)}
+        />
+      </Container>
+    </ChakraProvider>
   );
 }
 
