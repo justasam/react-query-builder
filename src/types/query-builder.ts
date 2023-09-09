@@ -11,6 +11,7 @@ export type Field = {
   type: FieldType;
   name: string;
   label?: string;
+  category?: string;
 };
 
 export type Association = {

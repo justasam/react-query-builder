@@ -1,5 +1,5 @@
 import { QueryBuilderContext } from "containers";
-import { useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 
 const useQueryBuilder = () => {
   const { baseConfig, selectedTable, setSelectedTable } =
@@ -22,11 +22,21 @@ const useQueryBuilder = () => {
       .map(({ toTable }) => toTable);
   }, [selectedTable, baseConfig?.associations]);
 
+  const getTableFields = useCallback(
+    (tableName: string) => {
+      const table = baseConfig?.tables.find(({ name }) => name === tableName);
+
+      return table?.fields || [];
+    },
+    [baseConfig?.tables]
+  );
+
   return {
     tables,
     associatedTables,
     selectedTable,
     setSelectedTable,
+    getTableFields,
   };
 };
 

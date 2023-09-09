@@ -18,6 +18,7 @@ const birthDate: Field = {
   type: FieldType.Date,
   name: "birth_date",
   label: "Birth Date",
+  category: "Dates",
 };
 
 // Sample Association Data
