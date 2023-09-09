@@ -1,16 +1,14 @@
 import { HStack, Select, Text } from "@chakra-ui/react";
+import { useQueryBuilder } from "hooks";
 
 type Option = {
   label?: string;
   value: string;
 };
 
-type Props = {
-  options: Array<Option>;
-  onSelect: (table: string) => void;
-};
+const TableSelector = () => {
+  const { tables, setSelectedTable, selectedTable } = useQueryBuilder();
 
-const TableSelector = ({ options, onSelect }: Props) => {
   const renderOption = (option: Option) => (
     <option value={option.value} key={option.value}>
       {option.label || option.value}
@@ -18,15 +16,18 @@ const TableSelector = ({ options, onSelect }: Props) => {
   );
 
   return (
-    <HStack spacing="12px">
+    <HStack spacing="12px" fontWeight="medium">
       <Select
         variant="filled"
+        fontWeight="medium"
+        placeholder="Select data"
+        w="fit-content"
+        value={selectedTable}
         onChange={(event) => {
-          onSelect(event.target.value);
+          setSelectedTable?.(event.target.value);
         }}
-        maxW="200px"
       >
-        {options.map(renderOption)}
+        {tables.map(renderOption)}
       </Select>
       <Text>where...</Text>
     </HStack>

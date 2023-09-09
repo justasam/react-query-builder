@@ -1,18 +1,17 @@
-import React from "react";
-import { ChakraProvider, Container } from "@chakra-ui/react";
-import { TableSelector } from "components";
+import { ChakraProvider, Container, Spacer } from "@chakra-ui/react";
+import { QueryBuilder, TableSelector } from "components";
+import { QueryBuilderProvider } from "containers";
+import { baseConfig } from "mocks";
 
 function App() {
   return (
     <ChakraProvider>
-      <Container maxW="4xl" borderWidth="1px" borderRadius="lg" p="4" mt="4">
-        <TableSelector
-          options={[
-            { label: "Accounts", value: "accounts" },
-            { label: "Sales", value: "sales" },
-          ]}
-          onSelect={(table) => console.log("selected", table)}
-        />
+      <Container maxW="4xl" borderWidth="2px" borderRadius="lg" p="8" mt="8">
+        <QueryBuilderProvider baseConfig={baseConfig}>
+          <TableSelector />
+          <Spacer mt="8" />
+          <QueryBuilder />
+        </QueryBuilderProvider>
       </Container>
     </ChakraProvider>
   );
