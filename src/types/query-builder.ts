@@ -60,8 +60,8 @@ export type RuleAssociation = {
 export type AnyRule = Rule | RuleGroup | RuleAssociation;
 
 export enum Combinator {
-  AND = "and",
-  OR = "or",
+  AND = "AND",
+  OR = "OR",
 }
 
 export type Query = {

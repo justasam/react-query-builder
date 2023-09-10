@@ -46,6 +46,13 @@ const OPERATOR_MAP: Record<
   ],
 };
 
+const DEFAULT_VALUE_MAP: Record<FieldType, string> = {
+  [FieldType.Boolean]: "true",
+  [FieldType.Date]: new Date().toISOString(),
+  [FieldType.Number]: "0",
+  [FieldType.String]: "Text",
+};
+
 const QueryRule = ({ rule, onChange, onDelete }: Props) => {
   const newRule = { ...rule };
 
@@ -54,6 +61,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
     newRule.fieldType = field.type;
     newRule.label = field.label || field.name;
     newRule.operator = OPERATOR_MAP[field.type][0].value;
+    newRule.value = DEFAULT_VALUE_MAP[field.type];
 
     onChange(newRule);
   };

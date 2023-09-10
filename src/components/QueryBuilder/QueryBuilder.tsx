@@ -98,6 +98,51 @@ const QueryBuilder = () => {
     setQuery?.(newQuery);
   };
 
+  const formatToSQL = () => {
+    let isFirstDone = false;
+
+    return (
+      query.rules.reduce<string>((prevSQL, rule, index) => {
+        if (rule.type === "Rule") {
+          if (!rule.field || !rule.operator || !rule.value) return prevSQL;
+
+          if (isFirstDone) {
+            prevSQL += ` ${query.combinator} `;
+          }
+
+          isFirstDone = true;
+
+          return prevSQL + `${rule.field} ${rule.operator} ${rule.value}`;
+        }
+
+        let isInnerFirstDone = false;
+
+        if (isFirstDone) {
+          prevSQL += ` ${query.combinator} `;
+        }
+
+        prevSQL += rule.rules.reduce((innerSQL, innerRule) => {
+          if (!innerRule.field || !innerRule.operator || !innerRule.value)
+            return innerSQL;
+
+          if (isInnerFirstDone) {
+            innerSQL += ` ${rule.combinator} `;
+          }
+
+          isInnerFirstDone = true;
+
+          return (
+            innerSQL +
+            `${innerRule.field} ${innerRule.operator} ${innerRule.value}`
+          );
+        }, "(");
+        prevSQL += `)`;
+
+        return prevSQL;
+      }, "(") + ")"
+    );
+  };
+
   const renderRule = (rule: AnyRule, index: number) => {
     if (rule.type === "Rule") {
       return (
@@ -156,39 +201,42 @@ const QueryBuilder = () => {
   };
 
   return (
-    <VStack spacing="4" align="stretch">
-      {renderTableTitle()}
-      {renderQuery()}
-      <HStack>
-        <Button
-          size="sm"
-          variant="ghost"
-          colorScheme="purple"
-          leftIcon={<SmallAddIcon />}
-          onClick={handleAddNewRule}
-        >
-          Add filter
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          colorScheme="purple"
-          leftIcon={<SmallAddIcon />}
-          onClick={handleAddNewRuleGroup}
-        >
-          Add filter group
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          colorScheme="purple"
-          leftIcon={<SmallAddIcon />}
-          onClick={handleAddNewRuleAssociation}
-        >
-          Add association
-        </Button>
-      </HStack>
-    </VStack>
+    <>
+      <VStack spacing="4" align="stretch">
+        {renderTableTitle()}
+        {renderQuery()}
+        <HStack>
+          <Button
+            size="sm"
+            variant="ghost"
+            colorScheme="purple"
+            leftIcon={<SmallAddIcon />}
+            onClick={handleAddNewRule}
+          >
+            Add filter
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            colorScheme="purple"
+            leftIcon={<SmallAddIcon />}
+            onClick={handleAddNewRuleGroup}
+          >
+            Add filter group
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            colorScheme="purple"
+            leftIcon={<SmallAddIcon />}
+            onClick={handleAddNewRuleAssociation}
+          >
+            Add association
+          </Button>
+        </HStack>
+      </VStack>
+      <div>Query: {formatToSQL()}</div>
+    </>
   );
 };
 
