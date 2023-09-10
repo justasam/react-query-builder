@@ -49,6 +49,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
       table: ruleGroup.table,
     });
 
+    console.log(newRuleGroup);
     onChange(newRuleGroup);
   };
 
@@ -105,6 +106,13 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
 
   const handleAssociationTableChange = (newTable: string) => {
     newRuleGroup.table = newTable;
+    newRuleGroup.rules = [
+      {
+        type: "Rule",
+        id: uuidv4(),
+        table: newTable,
+      },
+    ];
 
     onChange(newRuleGroup);
   };
@@ -114,8 +122,9 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
       return (
         <QueryRule
           rule={rule}
-          onDelete={handleRuleDelete(index)}
+          onDelete={index !== 0 ? handleRuleDelete(index) : undefined}
           onChange={handleRuleChange(rule, index)}
+          key={rule.id}
         />
       );
     return (
@@ -124,6 +133,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
         onDelete={handleRuleDelete(index)}
         onChange={handleRuleChange(rule, index)}
         level={level + 1}
+        key={rule.id}
       />
     );
   };
@@ -190,6 +200,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
       </>
     );
   };
+
   return (
     <>
       <HStack alignSelf="stretch">
@@ -211,6 +222,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, level, onDelete }: Props) => {
           onClick={onDelete}
         />
       </HStack>
+      <Button onClick={handleAddNewRule}>Add new rule</Button>
     </>
   );
 };

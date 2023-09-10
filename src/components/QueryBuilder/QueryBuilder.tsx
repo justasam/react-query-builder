@@ -23,6 +23,7 @@ const QueryBuilder = () => {
       <QueryRuleGroup
         ruleGroup={query}
         onChange={(newQuery) => {
+          console.log("Change", newQuery);
           setQuery?.(newQuery as Query);
         }}
         level={0}

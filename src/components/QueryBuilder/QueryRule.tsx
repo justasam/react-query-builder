@@ -7,7 +7,7 @@ import { Rule } from "types";
 type Props = {
   rule: Rule;
   onChange: (newRule: Rule) => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 };
 
 const QueryRule = ({ rule, onChange, onDelete }: Props) => {
@@ -35,12 +35,14 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
             tableName={rule.table}
           />
         </Box>
-        <IconButton
-          aria-label="Delete data"
-          variant="ghost"
-          icon={<DeleteIcon />}
-          onClick={onDelete}
-        />
+        {onDelete ? (
+          <IconButton
+            aria-label="Delete data"
+            variant="ghost"
+            icon={<DeleteIcon />}
+            onClick={onDelete}
+          />
+        ) : null}
       </HStack>
     </>
   );
