@@ -37,6 +37,8 @@ export type Rule = {
   field?: string;
   value?: string | boolean;
   operator?: string;
+  fieldType?: FieldType;
+  label?: string;
 };
 
 export type RuleGroup = {

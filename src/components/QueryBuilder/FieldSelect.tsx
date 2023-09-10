@@ -13,6 +13,8 @@ import {
   MenuItem,
   MenuList,
   Tag,
+  UseMenuItemProps,
+  useMenuItem,
 } from "@chakra-ui/react";
 import {
   ChevronDownIcon,
@@ -24,12 +26,39 @@ import { useQueryBuilder } from "hooks";
 import { Field } from "types";
 
 type Props = {
-  onSelect: (field: string) => void;
+  onSelect: (field: Field) => void;
   selectedField: string | undefined;
   tableName: string;
 };
 
+const SearchBar = (
+  props: UseMenuItemProps & {
+    query: string;
+    onQueryChange: (newQuery: string) => void;
+  }
+) => {
+  const { role, ...rest } = useMenuItem(props);
+
+  return (
+    <Box pl="2" pr="2" bgColor="InfoBackground" role={role}>
+      <InputGroup>
+        <InputLeftElement pointerEvents="none">
+          <SearchIcon color="gray.300" />
+        </InputLeftElement>
+        <Input
+          {...rest}
+          type="search"
+          placeholder="Search for a trait"
+          value={props.query}
+          onChange={(event) => props.onQueryChange(event.target.value)}
+        />
+      </InputGroup>
+    </Box>
+  );
+};
+
 const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { getTableFields } = useQueryBuilder();
@@ -37,7 +66,13 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
   const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
 
-  const fields = getTableFields(tableName);
+  const fields = getTableFields(tableName).filter((field) => {
+    if (!searchQuery) return true;
+
+    const fieldLabel = (field.label || field.name).toLowerCase();
+
+    return fieldLabel.includes(searchQuery.toLowerCase());
+  });
 
   const categoryToFieldMap = useMemo(() => {
     const categoryToFieldMap: Record<string, Array<Field>> = {
@@ -60,21 +95,17 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
 
   const categories = Object.keys(categoryToFieldMap);
 
-  const renderSearchBar = () => {
-    return (
-      <Box pl="2" pr="2" bgColor="InfoBackground">
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <SearchIcon color="gray.300" />
-          </InputLeftElement>
-          <Input type="search" placeholder="Search for a trait" />
-        </InputGroup>
-      </Box>
-    );
-  };
-
   const renderField = (field: Field) => {
-    return <MenuItem key={field.name}>{field.label}</MenuItem>;
+    return (
+      <MenuItem
+        key={field.name}
+        onClick={() => {
+          onSelect(field);
+        }}
+      >
+        {field.label}
+      </MenuItem>
+    );
   };
 
   const renderCategoryFields = (category: string, index: number) => {
@@ -100,7 +131,7 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
         {selectedField || "Select Data"}
       </MenuButton>
       <MenuList>
-        {renderSearchBar()}
+        <SearchBar query={searchQuery} onQueryChange={setSearchQuery} />
 
         <MenuGroup title="Categories">
           <HStack spacing="2" ml="2">

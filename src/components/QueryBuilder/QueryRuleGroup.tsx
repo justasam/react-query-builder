@@ -49,7 +49,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
   };
 
   const handleRuleChange = (ruleIndex: number) => (rule: Rule) => {
-    ruleGroup.rules[ruleIndex] = rule;
+    newRuleGroup.rules[ruleIndex] = rule;
 
     onChange(newRuleGroup);
   };
