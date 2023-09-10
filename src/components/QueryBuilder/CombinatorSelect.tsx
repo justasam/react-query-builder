@@ -18,7 +18,7 @@ const CombinatorSelect = ({ value, onChange, disabled = false }: Props) => {
     <Select
       variant="filled"
       fontWeight="medium"
-      w="100px"
+      w="105px"
       value={value}
       disabled={disabled}
       onChange={(event) => {

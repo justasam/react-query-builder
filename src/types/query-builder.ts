@@ -44,7 +44,7 @@ export type RuleGroup = {
   id: string;
   table: string; // <- when undefined, we assume it is associated & show dropdown
   combinator: Combinator;
-  rules: Array<AnyRule>;
+  rules: Array<Rule>;
 };
 
 export type RuleAssociation = {
@@ -52,7 +52,7 @@ export type RuleAssociation = {
   id: string;
   table: string; // <- when undefined, we assume it is associated & show dropdown
   combinator: Combinator;
-  rules: Array<AnyRule>;
+  rules: Array<Rule>;
 };
 
 export type AnyRule = Rule | RuleGroup | RuleAssociation;
@@ -62,7 +62,12 @@ export enum Combinator {
   OR = "or",
 }
 
-export type Query = RuleGroup;
+export type Query = {
+  table: string;
+  id: string;
+  rules: Array<AnyRule>;
+  combinator: Combinator;
+};
 
 export type QueryBuilderContextValue = {
   baseConfig: BaseConfig;

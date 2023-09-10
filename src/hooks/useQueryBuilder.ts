@@ -45,7 +45,6 @@ const useQueryBuilder = () => {
     if (!newTable) return;
 
     setQuery?.({
-      type: "RuleGroup",
       id: uuidv4(),
       table: newTable,
       combinator: Combinator.AND,
