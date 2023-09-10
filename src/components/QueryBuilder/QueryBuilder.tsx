@@ -1,11 +1,11 @@
-import { DeleteIcon } from "@chakra-ui/icons";
-import { Box, HStack, IconButton, Tag, Text, VStack } from "@chakra-ui/react";
+import { HStack, Tag, Text, VStack } from "@chakra-ui/react";
 
+import QueryRuleGroup from "./QueryRuleGroup";
 import { useQueryBuilder } from "hooks";
-import FieldSelect from "./FieldSelect";
+import { Query } from "types";
 
 const QueryBuilder = () => {
-  const { selectedTable } = useQueryBuilder();
+  const { selectedTable, query, setQuery } = useQueryBuilder();
 
   if (!selectedTable) return <Text as="i">Select data to start query.</Text>;
 
@@ -16,23 +16,24 @@ const QueryBuilder = () => {
     </HStack>
   );
 
+  const renderQuery = () => {
+    if (!query) return null;
+
+    return (
+      <QueryRuleGroup
+        ruleGroup={query}
+        onChange={(newQuery) => {
+          setQuery?.(newQuery as Query);
+        }}
+        level={0}
+      />
+    );
+  };
+
   return (
     <VStack spacing="4" align="stretch">
       {renderTableTitle()}
-      <HStack alignSelf="stretch">
-        <Box borderWidth="2px" borderRadius="lg" p="4" w="100%">
-          <FieldSelect
-            onSelect={(field) => console.log("selected", field)}
-            selectedField={undefined}
-            tableName={selectedTable}
-          />
-        </Box>
-        <IconButton
-          aria-label="Delete data"
-          variant="ghost"
-          icon={<DeleteIcon />}
-        />
-      </HStack>
+      {renderQuery()}
     </VStack>
   );
 };

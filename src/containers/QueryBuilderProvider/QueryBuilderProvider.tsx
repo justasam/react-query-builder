@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useState } from "react";
 
-import { BaseConfig, QueryBuilderContextValue, Rules } from "types";
+import { BaseConfig, QueryBuilderContextValue, Query } from "types";
 
 const QueryBuilderContext = createContext<Partial<QueryBuilderContextValue>>(
   {}
@@ -13,15 +13,15 @@ type Props = {
 };
 
 const QueryBuilderProvider = ({ baseConfig, children }: Props) => {
-  const [rules, setRules] = useState<Rules>();
+  const [query, setQuery] = useState<Query>();
   const [selectedTable, setSelectedTable] = useState<string>();
 
   return (
     <QueryBuilderContext.Provider
       value={{
         baseConfig,
-        rules,
-        setRules,
+        query,
+        setQuery,
         selectedTable,
         setSelectedTable,
       }}

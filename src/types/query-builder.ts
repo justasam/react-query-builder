@@ -30,29 +30,44 @@ export type BaseConfig = {
   associations: Array<Association>;
 };
 
-type BasicRule = {
-  field: string;
-  value: string | boolean;
-  operator: string;
+export type Rule = {
+  type: "Rule";
+  id: string;
+  table: string;
+  field?: string;
+  value?: string | boolean;
+  operator?: string;
 };
 
-type GroupRule = {
-  rules: Array<BasicRule | GroupRule>;
-  combinator: string;
+export type RuleGroup = {
+  type: "RuleGroup";
+  id: string;
+  table: string; // <- when undefined, we assume it is associated & show dropdown
+  combinator: Combinator;
+  rules: Array<AnyRule>;
 };
 
-type AssociationRule = GroupRule & { table: string };
-
-export type Rules = {
-  rules: Array<BasicRule | GroupRule | AssociationRule>;
-  combinator: string;
-  not: boolean;
+export type RuleAssociation = {
+  type: "RuleAssociation";
+  id: string;
+  table: string; // <- when undefined, we assume it is associated & show dropdown
+  combinator: Combinator;
+  rules: Array<AnyRule>;
 };
+
+export type AnyRule = Rule | RuleGroup | RuleAssociation;
+
+export enum Combinator {
+  AND = "and",
+  OR = "or",
+}
+
+export type Query = RuleGroup;
 
 export type QueryBuilderContextValue = {
   baseConfig: BaseConfig;
   selectedTable: string;
-  rules: Rules;
+  query: Query;
   setSelectedTable: Dispatch<SetStateAction<string | undefined>>;
-  setRules: Dispatch<SetStateAction<Rules | undefined>>;
+  setQuery: Dispatch<SetStateAction<Query | undefined>>;
 };

@@ -105,7 +105,9 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
         <MenuGroup title="Categories">
           <HStack spacing="2" ml="2">
             {categories.map((category) => (
-              <Tag colorScheme="purple">{category}</Tag>
+              <Tag colorScheme="purple" key={category}>
+                {category}
+              </Tag>
             ))}
           </HStack>
         </MenuGroup>

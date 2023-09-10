@@ -6,7 +6,7 @@ type Option = {
   value: string;
 };
 
-const TableSelector = () => {
+const TableSelect = () => {
   const { tables, setSelectedTable, selectedTable } = useQueryBuilder();
 
   const renderOption = (option: Option) => (
@@ -34,4 +34,4 @@ const TableSelector = () => {
   );
 };
 
-export default TableSelector;
+export default TableSelect;
