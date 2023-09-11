@@ -13,6 +13,8 @@ import {
   MenuItem,
   MenuList,
   Tag,
+  TagCloseButton,
+  TagLabel,
   Text,
   UseMenuItemProps,
   useMenuItem,
@@ -59,6 +61,7 @@ const SearchBar = (
 };
 
 const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -95,6 +98,30 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
   }, [fields]);
 
   const categories = Object.keys(categoryToFieldMap);
+
+  const filteredCategories = categories.filter((category) => {
+    if (!categoryFilter.size) return true;
+
+    return categoryFilter.has(category);
+  });
+
+  const toggleFilterCategory = (category: string) => {
+    if (!categoryFilter.size) {
+      setCategoryFilter(new Set([category]));
+
+      return;
+    }
+
+    const newCategoryFilter = new Set(...new Array(categoryFilter));
+
+    if (newCategoryFilter.has(category)) {
+      newCategoryFilter.delete(category);
+    } else {
+      newCategoryFilter.add(category);
+    }
+
+    setCategoryFilter(newCategoryFilter);
+  };
 
   const renderField = (field: Field) => {
     return (
@@ -141,15 +168,21 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
         <MenuGroup title="Categories">
           <HStack spacing="2" ml="2">
             {categories.map((category) => (
-              <Tag colorScheme="purple" key={category}>
-                {category}
+              <Tag
+                colorScheme="purple"
+                key={category}
+                as="button"
+                onClick={() => toggleFilterCategory(category)}
+              >
+                <TagLabel>{category}</TagLabel>
+                {categoryFilter?.has(category) ? <TagCloseButton /> : null}
               </Tag>
             ))}
           </HStack>
         </MenuGroup>
         <MenuDivider />
 
-        {categories.map(renderCategoryFields)}
+        {filteredCategories.map(renderCategoryFields)}
       </MenuList>
     </Menu>
   );
