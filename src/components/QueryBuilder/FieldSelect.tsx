@@ -70,13 +70,24 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
   const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
 
-  const fields = getTableFields(tableName).filter((field) => {
+  const allFields = getTableFields(tableName);
+  const fields = allFields.filter((field) => {
     if (!searchQuery) return true;
 
     const fieldLabel = (field.label || field.name).toLowerCase();
 
     return fieldLabel.includes(searchQuery.toLowerCase());
   });
+
+  const allCategories = useMemo(() => {
+    const categories = new Set<string>(["Uncategorized"]);
+
+    allFields.forEach((field) => {
+      if (field.category) categories.add(field.category);
+    });
+
+    return [...categories];
+  }, [allFields]);
 
   const categoryToFieldMap = useMemo(() => {
     const categoryToFieldMap: Record<string, Array<Field>> = {
@@ -112,7 +123,7 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
       return;
     }
 
-    const newCategoryFilter = new Set(...new Array(categoryFilter));
+    const newCategoryFilter = new Set([...categoryFilter]);
 
     if (newCategoryFilter.has(category)) {
       newCategoryFilter.delete(category);
@@ -167,11 +178,12 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
 
         <MenuGroup title="Categories">
           <HStack spacing="2" ml="2">
-            {categories.map((category) => (
+            {allCategories.map((category) => (
               <Tag
                 colorScheme="purple"
                 key={category}
                 as="button"
+                _hover={{ opacity: 0.85 }}
                 onClick={() => toggleFilterCategory(category)}
               >
                 <TagLabel>{category}</TagLabel>
