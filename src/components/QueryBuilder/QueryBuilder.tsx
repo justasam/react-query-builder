@@ -42,7 +42,6 @@ const QueryBuilder = () => {
   };
 
   const handleRuleChange = (ruleIndex: number) => (rule: AnyRule) => {
-    console.log("r", rule);
     newQuery.rules[ruleIndex] = rule;
 
     setQuery?.(newQuery);

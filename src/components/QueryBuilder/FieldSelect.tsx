@@ -13,6 +13,7 @@ import {
   MenuItem,
   MenuList,
   Tag,
+  Text,
   UseMenuItemProps,
   useMenuItem,
 } from "@chakra-ui/react";
@@ -125,10 +126,14 @@ const FieldSelect = ({ selectedField, onSelect, tableName }: Props) => {
     <Menu placement="right-start" isOpen={isMenuOpen} onClose={closeMenu}>
       <MenuButton
         as={Button}
-        rightIcon={isMenuOpen ? <ChevronRightIcon /> : <ChevronDownIcon />}
         onClick={openMenu}
+        rightIcon={isMenuOpen ? <ChevronRightIcon /> : <ChevronDownIcon />}
+        isTruncated
+        w="fit-content"
+        maxW="200px"
+        flexShrink={0}
       >
-        {selectedField || "Select Data"}
+        <Text isTruncated>{selectedField || "Select Data"}</Text>
       </MenuButton>
       <MenuList>
         <SearchBar query={searchQuery} onQueryChange={setSearchQuery} />

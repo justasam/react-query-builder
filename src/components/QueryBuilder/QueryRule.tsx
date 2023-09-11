@@ -1,8 +1,10 @@
-import { HStack, IconButton, Select } from "@chakra-ui/react";
+import { HStack, IconButton, Input, Select, Switch } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 
 import FieldSelect from "./FieldSelect";
 import { Field, FieldType, Rule } from "types";
+import { useMemo, useState } from "react";
+import { useDebounce } from "hooks";
 
 type Props = {
   rule: Rule;
@@ -53,8 +55,62 @@ const DEFAULT_VALUE_MAP: Record<FieldType, string> = {
   [FieldType.String]: "Text",
 };
 
+type InputProps = {
+  value: string | undefined;
+  onChange: (newValue: string) => void;
+};
+
+const INPUT_MAP: Record<FieldType, (props: InputProps) => JSX.Element> = {
+  [FieldType.Boolean]: (props: InputProps) => (
+    <Switch
+      as="button"
+      isChecked={props.value === "true"}
+      onClick={() => props.onChange(props.value === "true" ? "false" : "true")}
+      maxW="300px"
+    />
+  ),
+  [FieldType.Date]: (props: InputProps) => (
+    <Input
+      type="date"
+      variant="unstyled"
+      value={props.value}
+      onChange={(event) => props.onChange(event.target.value)}
+      maxW="300px"
+    />
+  ),
+  [FieldType.Number]: (props: InputProps) => (
+    <Input
+      type="number"
+      variant="unstyled"
+      value={props.value}
+      onChange={(event) => props.onChange(event.target.value)}
+      maxW="300px"
+    />
+  ),
+  [FieldType.String]: (props: InputProps) => (
+    <Input
+      type="text"
+      variant="unstyled"
+      value={props.value}
+      onChange={(event) => props.onChange(event.target.value)}
+      maxW="300px"
+    />
+  ),
+};
+
 const QueryRule = ({ rule, onChange, onDelete }: Props) => {
+  const [value, setValue] = useState(rule.value || "");
+
   const newRule = { ...rule };
+
+  useDebounce(
+    () => {
+      newRule.value = value;
+      onChange(newRule);
+    },
+    200,
+    [value]
+  );
 
   const handleFieldSelect = (field: Field) => {
     newRule.field = field.name;
@@ -81,6 +137,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
         fontWeight="medium"
         w="fit-content"
         maxW="200px"
+        isTruncated
         value={rule.operator}
         onChange={(event) => handleOperatorSelect(event.target.value)}
       >
@@ -93,6 +150,22 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
     );
   };
 
+  const renderInputElement = useMemo(() => {
+    if (!rule.fieldType) return null;
+    return INPUT_MAP[rule.fieldType];
+  }, [rule.fieldType]);
+
+  const renderInput = () => {
+    if (!rule.field || !rule.fieldType || !rule.operator) return null;
+
+    return renderInputElement?.({
+      value: value,
+      onChange: (newValue) => {
+        setValue(newValue);
+      },
+    });
+  };
+
   return (
     <>
       <HStack alignSelf="stretch">
@@ -102,6 +175,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
           p="4"
           w="100%"
           backgroundColor="white"
+          wrap="wrap"
         >
           <FieldSelect
             selectedField={rule.label}
@@ -109,6 +183,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
             tableName={rule.table}
           />
           {renderOperatorSelect()}
+          {renderInput()}
         </HStack>
         {onDelete ? (
           <IconButton

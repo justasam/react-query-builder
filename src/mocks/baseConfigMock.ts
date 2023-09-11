@@ -21,6 +21,18 @@ const birthDate: Field = {
   category: "Dates",
 };
 
+const isAdmin: Field = {
+  type: FieldType.Boolean,
+  name: "is_admin",
+  label: "Is Admin",
+};
+
+const age: Field = {
+  type: FieldType.Number,
+  name: "age",
+  label: "Age",
+};
+
 // Sample Association Data
 const employeeToDepartment: Association = {
   fromTable: "employees",
@@ -36,7 +48,7 @@ const departmentToManager: Association = {
 const employeesTable: Table = {
   name: "employees",
   label: "Employee Information",
-  fields: [firstName, lastName, birthDate],
+  fields: [firstName, lastName, birthDate, isAdmin, age],
 };
 
 const departmentsTable: Table = {

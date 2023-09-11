@@ -35,7 +35,7 @@ export type Rule = {
   id: string;
   table: string;
   field?: string;
-  value?: string | boolean;
+  value?: string;
   operator?: string;
   fieldType?: FieldType;
   label?: string;

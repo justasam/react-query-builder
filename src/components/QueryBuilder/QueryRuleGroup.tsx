@@ -44,7 +44,6 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
       table: ruleGroup.table,
     });
 
-    console.log(newRuleGroup);
     onChange(newRuleGroup);
   };
 

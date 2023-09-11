@@ -19,6 +19,7 @@ const AssociationSelect = ({ value, onChange, tables }: Props) => {
       fontWeight="medium"
       w="fit-content"
       maxW="200px"
+      isTruncated
       value={value}
       onChange={(event) => {
         onChange(event.target.value);

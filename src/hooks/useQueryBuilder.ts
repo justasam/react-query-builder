@@ -40,8 +40,6 @@ const useQueryBuilder = () => {
   );
 
   const resetQuery = (newTable: string) => {
-    console.log("RESET");
-
     if (!newTable) return;
 
     setQuery?.({

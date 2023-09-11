@@ -19,6 +19,7 @@ const CombinatorSelect = ({ value, onChange, disabled = false }: Props) => {
       variant="filled"
       fontWeight="medium"
       w="105px"
+      isTruncated
       value={value}
       disabled={disabled}
       onChange={(event) => {
