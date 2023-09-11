@@ -55,9 +55,9 @@ export const INPUT_MAP: Record<FieldType, (props: InputProps) => JSX.Element> =
       <Switch
         as="button"
         isChecked={props.value === "true"}
-        onClick={() =>
-          props.onChange(props.value === "true" ? "false" : "true")
-        }
+        onChange={() => {
+          props.onChange(props.value === "true" ? "false" : "true");
+        }}
         maxW="300px"
       />
     ),
