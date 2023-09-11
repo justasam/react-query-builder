@@ -118,6 +118,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
     newRule.label = field.label || field.name;
     newRule.operator = OPERATOR_MAP[field.type][0].value;
     newRule.value = DEFAULT_VALUE_MAP[field.type];
+    setValue(newRule.value);
 
     onChange(newRule);
   };
