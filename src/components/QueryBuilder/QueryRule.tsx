@@ -1,101 +1,16 @@
-import { HStack, IconButton, Input, Select, Switch } from "@chakra-ui/react";
+import { HStack, IconButton, Select } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 
 import FieldSelect from "./FieldSelect";
-import { Field, FieldType, Rule } from "types";
+import { Field, Rule } from "types";
 import { useMemo, useState } from "react";
 import { useDebounce } from "hooks";
+import { DEFAULT_VALUE_MAP, INPUT_MAP, OPERATOR_MAP } from "./fieldPresets";
 
 type Props = {
   rule: Rule;
   onChange: (newRule: Rule) => void;
   onDelete?: () => void;
-};
-
-const OPERATOR_MAP: Record<
-  FieldType,
-  Array<{
-    value: string;
-    label: string;
-  }>
-> = {
-  [FieldType.Boolean]: [
-    { value: "=", label: "Equals" },
-    { value: "<>", label: "Not Equals" },
-  ],
-  [FieldType.Date]: [
-    { value: "=", label: "Equals" },
-    { value: "<>", label: "Not Equals" },
-    { value: ">", label: "After" },
-    { value: "<", label: "Before" },
-    { value: ">=", label: "On or After" },
-    { value: "<=", label: "On or Before" },
-  ],
-  [FieldType.Number]: [
-    { value: "=", label: "Equals" },
-    { value: "<>", label: "Not Equals" },
-    { value: ">", label: "Greater Than" },
-    { value: "<", label: "Less Than" },
-    { value: ">=", label: "Greater Than or Equal To" },
-    { value: "<=", label: "Less Than or Equal To" },
-  ],
-  [FieldType.String]: [
-    { value: "LIKE", label: "Contains" },
-    { value: "=", label: "Equals" },
-    { value: "<>", label: "Not Equals" },
-    { value: ">", label: "Greater Than" },
-    { value: "<", label: "Less Than" },
-  ],
-};
-
-const DEFAULT_VALUE_MAP: Record<FieldType, string> = {
-  [FieldType.Boolean]: "true",
-  [FieldType.Date]: new Date().toISOString(),
-  [FieldType.Number]: "0",
-  [FieldType.String]: "Text",
-};
-
-type InputProps = {
-  value: string | undefined;
-  onChange: (newValue: string) => void;
-};
-
-const INPUT_MAP: Record<FieldType, (props: InputProps) => JSX.Element> = {
-  [FieldType.Boolean]: (props: InputProps) => (
-    <Switch
-      as="button"
-      isChecked={props.value === "true"}
-      onClick={() => props.onChange(props.value === "true" ? "false" : "true")}
-      maxW="300px"
-    />
-  ),
-  [FieldType.Date]: (props: InputProps) => (
-    <Input
-      type="date"
-      variant="unstyled"
-      value={props.value}
-      onChange={(event) => props.onChange(event.target.value)}
-      maxW="300px"
-    />
-  ),
-  [FieldType.Number]: (props: InputProps) => (
-    <Input
-      type="number"
-      variant="unstyled"
-      value={props.value}
-      onChange={(event) => props.onChange(event.target.value)}
-      maxW="300px"
-    />
-  ),
-  [FieldType.String]: (props: InputProps) => (
-    <Input
-      type="text"
-      variant="unstyled"
-      value={props.value}
-      onChange={(event) => props.onChange(event.target.value)}
-      maxW="300px"
-    />
-  ),
 };
 
 const QueryRule = ({ rule, onChange, onDelete }: Props) => {
