@@ -23,7 +23,7 @@ type Props = {
 };
 
 const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
-  const { associatedTables } = useQueryBuilder();
+  const { associations, removeAssociation, addAssociation } = useQueryBuilder();
   const newRuleGroup = {
     ...ruleGroup,
     rules: [...ruleGroup.rules],
@@ -59,13 +59,23 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
     onChange(newRuleGroup);
   };
 
-  const handleAssociationTableChange = (newTable: string) => {
-    newRuleGroup.table = newTable;
+  const handleAssociationChange = (newAssociationId: string) => {
+    const newAssociation = associations.find(
+      ({ id }) => id === newAssociationId
+    );
+
+    if (!newAssociation || !(newRuleGroup.type === "RuleAssociation")) return;
+
+    removeAssociation(newRuleGroup.associationId);
+    addAssociation(newAssociationId);
+
+    newRuleGroup.table = newAssociation.toTable;
+    newRuleGroup.associationId = newAssociation.id;
     newRuleGroup.rules = [
       {
         type: "Rule",
         id: uuidv4(),
-        table: newTable,
+        table: newAssociation.toTable,
       },
     ];
 
@@ -122,9 +132,9 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
         <HStack alignSelf="stretch">
           <Text>Associated to a </Text>
           <AssociationSelect
-            tables={associatedTables}
+            associations={associations}
             value={ruleGroup.table}
-            onChange={handleAssociationTableChange}
+            onChange={handleAssociationChange}
           />
           <Text>where... </Text>
         </HStack>

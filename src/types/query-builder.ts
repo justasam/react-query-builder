@@ -15,8 +15,11 @@ export type Field = {
 };
 
 export type Association = {
+  id: string;
   fromTable: string;
+  fromColumn: string;
   toTable: string;
+  toColumn: string;
 };
 
 export type Table = {
@@ -44,7 +47,7 @@ export type Rule = {
 export type RuleGroup = {
   type: "RuleGroup";
   id: string;
-  table: string; // <- when undefined, we assume it is associated & show dropdown
+  table: string;
   combinator: Combinator;
   rules: Array<Rule>;
 };
@@ -52,8 +55,9 @@ export type RuleGroup = {
 export type RuleAssociation = {
   type: "RuleAssociation";
   id: string;
-  table: string; // <- when undefined, we assume it is associated & show dropdown
   combinator: Combinator;
+  table: string;
+  associationId: string;
   rules: Array<Rule>;
 };
 
@@ -69,6 +73,7 @@ export type Query = {
   id: string;
   rules: Array<AnyRule>;
   combinator: Combinator;
+  associations: Array<Association>;
 };
 
 export type QueryBuilderContextValue = {

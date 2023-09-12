@@ -22,13 +22,47 @@ const useQueryBuilder = () => {
     }));
   }, [baseConfig?.tables]);
 
-  const associatedTables = useMemo(() => {
+  const associations = useMemo(() => {
     if (!selectedTable || !baseConfig?.associations) return [];
 
-    return baseConfig?.associations
-      .filter(({ fromTable }) => fromTable === selectedTable)
-      .map(({ toTable }) => toTable);
+    return baseConfig?.associations.filter(
+      ({ fromTable }) => fromTable === selectedTable
+    );
   }, [selectedTable, baseConfig?.associations]);
+
+  const removeAssociation = useCallback(
+    (associationId: string) => {
+      if (!query) return;
+
+      const newAssociations = query.associations.filter(
+        ({ id }) => id !== associationId
+      );
+
+      setQuery?.({
+        ...query,
+        associations: newAssociations,
+      });
+    },
+    [query, setQuery]
+  );
+
+  const addAssociation = useCallback(
+    (associationId: string) => {
+      if (!query) return;
+
+      const association = associations.find(({ id }) => id === associationId);
+
+      if (!association) return;
+
+      const newAssociations = [...query.associations, association];
+
+      setQuery?.({
+        ...query,
+        associations: newAssociations,
+      });
+    },
+    [query, setQuery, associations]
+  );
 
   const getTableFields = useCallback(
     (tableName: string) => {
@@ -54,6 +88,7 @@ const useQueryBuilder = () => {
           table: newTable,
         },
       ],
+      associations: [],
     });
   };
 
@@ -66,13 +101,15 @@ const useQueryBuilder = () => {
 
   return {
     tables,
-    associatedTables,
+    associations,
     selectedTable,
     setSelectedTable,
     getTableFields,
     query,
     resetQuery,
     setQuery,
+    removeAssociation,
+    addAssociation,
   };
 };
 

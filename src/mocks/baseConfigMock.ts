@@ -1,72 +1,60 @@
-// Thanks chatGPT for generating this :)
+import { BaseConfig, FieldType } from "types";
+import { v4 as uuidv4 } from "uuid";
 
-import { Association, Field, FieldType, BaseConfig, Table } from "types";
-
-const firstName: Field = {
-  type: FieldType.String,
-  name: "first_name",
-  label: "First Name",
-};
-
-const lastName: Field = {
-  type: FieldType.String,
-  name: "last_name",
-  label: "Last Name",
-};
-
-const birthDate: Field = {
-  type: FieldType.Date,
-  name: "birth_date",
-  label: "Birth Date",
-  category: "Dates",
-};
-
-const isAdmin: Field = {
-  type: FieldType.Boolean,
-  name: "is_admin",
-  label: "Is Admin",
-};
-
-const age: Field = {
-  type: FieldType.Number,
-  name: "age",
-  label: "Age",
-};
-
-// Sample Association Data
-const employeeToDepartment: Association = {
-  fromTable: "employees",
-  toTable: "departments",
-};
-
-const departmentToManager: Association = {
-  fromTable: "departments",
-  toTable: "employees",
-};
-
-// Sample Table Data
-const employeesTable: Table = {
-  name: "employees",
-  label: "Employee Information",
-  fields: [firstName, lastName, birthDate, isAdmin, age],
-};
-
-const departmentsTable: Table = {
-  name: "departments",
-  label: "Department Information",
-  fields: [firstName, lastName],
-};
-
-const managersTable: Table = {
-  name: "managers",
-  label: "Manager Information",
-  fields: [firstName, lastName, birthDate],
-};
-
-// Sample BaseConfig
 const baseConfig: BaseConfig = {
-  tables: [employeesTable, departmentsTable, managersTable],
-  associations: [employeeToDepartment, departmentToManager],
+  tables: [
+    {
+      name: "users",
+      label: "Users",
+      fields: [
+        {
+          type: FieldType.String,
+          name: "username",
+          label: "Username",
+        },
+        {
+          type: FieldType.Number,
+          name: "age",
+          label: "Age",
+        },
+        {
+          type: FieldType.Number,
+          name: "id",
+          label: "User ID",
+        },
+      ],
+    },
+    {
+      name: "orders",
+      label: "Orders",
+      fields: [
+        {
+          type: FieldType.Date,
+          name: "order_date",
+          label: "Order Date",
+        },
+        {
+          type: FieldType.Boolean,
+          name: "is_paid",
+          label: "Is Paid",
+        },
+        {
+          type: FieldType.Number,
+          name: "buyer_id",
+          label: "Buyer ID",
+        },
+      ],
+    },
+  ],
+  associations: [
+    {
+      id: uuidv4(),
+      fromTable: "users",
+      fromColumn: "id",
+      toTable: "orders",
+      toColumn: "buyer_id",
+    },
+  ],
 };
 
 export { baseConfig };

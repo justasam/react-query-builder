@@ -15,10 +15,18 @@ import { useQueryBuilder } from "hooks";
 import { AnyRule, Combinator } from "types";
 import CombinatorSelect from "./CombinatorSelect";
 import QueryRule from "./QueryRule";
+import { formatQueryToSQL } from "utils";
+import { SQL_KEYWORDS } from "constants/sql";
 
 const QueryBuilder = () => {
-  const { selectedTable, query, setQuery, associatedTables } =
-    useQueryBuilder();
+  const {
+    selectedTable,
+    query,
+    setQuery,
+    associations,
+    removeAssociation,
+    addAssociation,
+  } = useQueryBuilder();
 
   if (!selectedTable || !query)
     return <Text as="i">Select data to start query.</Text>;
@@ -48,7 +56,13 @@ const QueryBuilder = () => {
   };
 
   const handleRuleDelete = (ruleIndex: number) => () => {
-    newQuery.rules.splice(ruleIndex, 1);
+    const deletedRule = newQuery.rules.splice(ruleIndex, 1)[0];
+
+    if (deletedRule.type === "RuleAssociation") {
+      newQuery.associations = newQuery.associations.filter(
+        (association) => association.id !== deletedRule.associationId
+      );
+    }
 
     setQuery?.(newQuery);
   };
@@ -76,70 +90,27 @@ const QueryBuilder = () => {
   };
 
   const handleAddNewRuleAssociation = () => {
-    const associatedTable = associatedTables[0];
+    const association = associations[0];
 
-    if (!associatedTable) return;
+    if (!association) return;
 
+    newQuery.associations.push(association);
     newQuery.rules.push({
       type: "RuleAssociation",
       id: uuidv4(),
-      table: associatedTable,
+      table: association.toTable,
+      associationId: association.id,
       rules: [
         {
           type: "Rule",
           id: uuidv4(),
-          table: associatedTable,
+          table: association.toTable,
         },
       ],
       combinator: Combinator.AND,
     });
 
     setQuery?.(newQuery);
-  };
-
-  const formatToSQL = () => {
-    let isFirstDone = false;
-
-    return (
-      query.rules.reduce<string>((prevSQL, rule, index) => {
-        if (rule.type === "Rule") {
-          if (!rule.field || !rule.operator || !rule.value) return prevSQL;
-
-          if (isFirstDone) {
-            prevSQL += ` ${query.combinator} `;
-          }
-
-          isFirstDone = true;
-
-          return prevSQL + `${rule.field} ${rule.operator} ${rule.value}`;
-        }
-
-        let isInnerFirstDone = false;
-
-        if (isFirstDone) {
-          prevSQL += ` ${query.combinator} `;
-        }
-
-        prevSQL += rule.rules.reduce((innerSQL, innerRule) => {
-          if (!innerRule.field || !innerRule.operator || !innerRule.value)
-            return innerSQL;
-
-          if (isInnerFirstDone) {
-            innerSQL += ` ${rule.combinator} `;
-          }
-
-          isInnerFirstDone = true;
-
-          return (
-            innerSQL +
-            `${innerRule.field} ${innerRule.operator} ${innerRule.value}`
-          );
-        }, "(");
-        prevSQL += `)`;
-
-        return prevSQL;
-      }, "(") + ")"
-    );
   };
 
   const renderRule = (rule: AnyRule, index: number) => {
@@ -234,7 +205,20 @@ const QueryBuilder = () => {
           </Button>
         </HStack>
       </VStack>
-      <div>Query: {formatToSQL()}</div>
+      <div>
+        Query:{" "}
+        {formatQueryToSQL(query)
+          .split(" ")
+          .map((sqlStr, index) => (
+            <Text
+              key={index}
+              as={SQL_KEYWORDS.includes(sqlStr) ? "b" : undefined}
+              display="inline"
+            >
+              {sqlStr}&nbsp;
+            </Text>
+          ))}
+      </div>
     </>
   );
 };

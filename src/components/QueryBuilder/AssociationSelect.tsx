@@ -1,15 +1,16 @@
 import { Select } from "@chakra-ui/react";
+import { Association } from "types";
 
 type Props = {
   value: string;
-  onChange: (newTable: string) => void;
-  tables: Array<string>;
+  onChange: (newId: string) => void;
+  associations: Array<Association>;
 };
 
-const AssociationSelect = ({ value, onChange, tables }: Props) => {
-  const renderOption = (table: string) => (
-    <option value={table} key={table}>
-      {table}
+const AssociationSelect = ({ value, onChange, associations }: Props) => {
+  const renderOption = (association: Association) => (
+    <option value={association.id} key={association.id}>
+      {association.toTable}
     </option>
   );
 
@@ -25,7 +26,7 @@ const AssociationSelect = ({ value, onChange, tables }: Props) => {
         onChange(event.target.value);
       }}
     >
-      {tables.map(renderOption)}
+      {associations.map(renderOption)}
     </Select>
   );
 };
