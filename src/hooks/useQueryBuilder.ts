@@ -22,6 +22,19 @@ const useQueryBuilder = () => {
     }));
   }, [baseConfig?.tables]);
 
+  const tablesInQuery = useMemo(() => {
+    if (!query?.rules) return [];
+
+    const tables: string[] = [];
+
+    for (const rule of query.rules) {
+      if (tables.includes(rule.table)) continue;
+      tables.push(rule.table);
+    }
+
+    return tables;
+  }, [query?.rules]);
+
   const getAssociationsForRule = useCallback(
     (ruleId?: string) => {
       if (!selectedTable || !baseConfig?.associations) return [];
@@ -133,6 +146,7 @@ const useQueryBuilder = () => {
     query,
     resetQuery,
     setQuery,
+    tablesInQuery,
     removeAssociation,
     addAssociation,
   };

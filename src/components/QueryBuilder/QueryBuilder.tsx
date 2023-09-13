@@ -59,8 +59,20 @@ const QueryBuilder = () => {
     const deletedRule = newQuery.rules.splice(ruleIndex, 1)[0];
 
     if (deletedRule.type === "RuleAssociation") {
+      const obsoleteAssocations = newQuery.associations
+        .filter((association) => association.fromTable === deletedRule.table)
+        .map((association) => association.id);
+      const newRules = newQuery.rules.filter(
+        (rule) =>
+          rule.type !== "RuleAssociation" ||
+          !obsoleteAssocations.includes(rule.associationId)
+      );
+
+      newQuery.rules = newRules;
       newQuery.associations = newQuery.associations.filter(
-        (association) => association.id !== deletedRule.associationId
+        (association) =>
+          association.id !== deletedRule.associationId &&
+          association.fromTable !== deletedRule.table
       );
     }
 
