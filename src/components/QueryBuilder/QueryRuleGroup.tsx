@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   Box,
   Button,
@@ -11,85 +10,57 @@ import {
 import { DeleteIcon, SmallAddIcon } from "@chakra-ui/icons";
 
 import { Combinator, Rule, RuleAssociation, RuleGroup } from "types";
+import { useQueryBuilder } from "hooks";
+
 import QueryRule from "./QueryRule";
 import CombinatorSelect from "./CombinatorSelect";
-import { useQueryBuilder } from "hooks";
 import AssociationSelect from "./AssociationSelect";
 
 type Props = {
   ruleGroup: RuleGroup | RuleAssociation;
-  onChange: (newRuleGroup: RuleGroup | RuleAssociation) => void;
-  onDelete?: () => void;
+  parentId: string;
 };
 
-const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
-  const { getAssociationsForRule, removeAssociation, addAssociation } =
-    useQueryBuilder();
-  const newRuleGroup = {
-    ...ruleGroup,
-    rules: [...ruleGroup.rules],
-  };
+const QueryRuleGroup = ({ ruleGroup, parentId }: Props) => {
+  const {
+    getAssociationsForRule,
+    updateAssociationRule,
+    updateQueryRule,
+    deleteQueryRule,
+    addQueryRule,
+  } = useQueryBuilder();
 
   const associations = getAssociationsForRule(ruleGroup.id);
 
   const handleCombinatorChange = (newCombinator: Combinator) => {
+    const newRuleGroup = {
+      ...ruleGroup,
+      rules: [...ruleGroup.rules],
+    };
     newRuleGroup.combinator = newCombinator;
 
-    onChange(newRuleGroup);
+    updateQueryRule(parentId, newRuleGroup);
   };
 
   const handleAddNewRule = () => {
-    if (!ruleGroup.table) return;
-
-    newRuleGroup.rules.push({
-      type: "Rule",
-      id: uuidv4(),
-      table: ruleGroup.table,
-    });
-
-    onChange(newRuleGroup);
-  };
-
-  const handleRuleChange = (ruleIndex: number) => (rule: Rule) => {
-    newRuleGroup.rules[ruleIndex] = rule;
-
-    onChange(newRuleGroup);
-  };
-
-  const handleRuleDelete = (ruleIndex: number) => () => {
-    newRuleGroup.rules.splice(ruleIndex, 1);
-
-    onChange(newRuleGroup);
+    addQueryRule(ruleGroup.id, "Rule");
   };
 
   const handleAssociationChange = (newAssociationId: string) => {
-    const newAssociation = associations.find(
-      ({ id }) => id === newAssociationId
-    );
+    if (ruleGroup.type !== "RuleAssociation") return;
 
-    if (!newAssociation || !(newRuleGroup.type === "RuleAssociation")) return;
+    updateAssociationRule(parentId, ruleGroup, newAssociationId);
+  };
 
-    removeAssociation(newRuleGroup.associationId);
-    addAssociation(newAssociationId);
-
-    newRuleGroup.table = newAssociation.toTable;
-    newRuleGroup.associationId = newAssociation.id;
-    newRuleGroup.rules = [
-      {
-        type: "Rule",
-        id: uuidv4(),
-        table: newAssociation.toTable,
-      },
-    ];
-
-    onChange(newRuleGroup);
+  const handleDeleteClick = () => {
+    deleteQueryRule(ruleGroup.id);
   };
 
   const renderRule = (rule: Rule, index: number) => (
     <QueryRule
       rule={rule}
-      onDelete={index !== 0 ? handleRuleDelete(index) : undefined}
-      onChange={handleRuleChange(index)}
+      parentId={ruleGroup.id}
+      isDeletable={index !== 0}
       key={rule.id}
     />
   );
@@ -176,7 +147,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
           aria-label="Delete data"
           variant="ghost"
           icon={<DeleteIcon />}
-          onClick={onDelete}
+          onClick={handleDeleteClick}
         />
       </HStack>
     </>

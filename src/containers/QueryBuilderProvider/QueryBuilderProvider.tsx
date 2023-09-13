@@ -1,6 +1,12 @@
 import { ReactNode, createContext, useState } from "react";
 
-import { BaseConfig, QueryBuilderContextValue, Query } from "types";
+import {
+  QueryDataset,
+  QueryBuilderContextValue,
+  Query,
+  QueryConfig,
+  Combinator,
+} from "types";
 
 const QueryBuilderContext = createContext<Partial<QueryBuilderContextValue>>(
   {}
@@ -8,18 +14,32 @@ const QueryBuilderContext = createContext<Partial<QueryBuilderContextValue>>(
 QueryBuilderContext.displayName = "QueryBuilderContext";
 
 type Props = {
-  baseConfig: BaseConfig;
+  queryDataset: QueryDataset;
   children: ReactNode;
+  queryConfig?: QueryConfig;
+  initialQuery?: Query;
 };
 
-const QueryBuilderProvider = ({ baseConfig, children }: Props) => {
-  const [query, setQuery] = useState<Query>();
-  const [selectedTable, setSelectedTable] = useState<string>();
+const queryConfigDefaults: QueryConfig = {
+  defaultCombinator: Combinator.AND,
+};
+
+const QueryBuilderProvider = ({
+  queryDataset,
+  queryConfig,
+  initialQuery,
+  children,
+}: Props) => {
+  const [query, setQuery] = useState<Query | undefined>(initialQuery);
+  const [selectedTable, setSelectedTable] = useState<string | undefined>(
+    initialQuery?.table || undefined
+  );
 
   return (
     <QueryBuilderContext.Provider
       value={{
-        baseConfig,
+        queryDataset,
+        queryConfig: { ...queryConfigDefaults, ...queryConfig },
         query,
         setQuery,
         selectedTable,

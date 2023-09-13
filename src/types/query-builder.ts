@@ -28,7 +28,7 @@ export type Table = {
   fields: Array<Field>;
 };
 
-export type BaseConfig = {
+export type QueryDataset = {
   tables: Array<Table>;
   associations: Array<Association>;
 };
@@ -63,6 +63,8 @@ export type RuleAssociation = {
 
 export type AnyRule = Rule | RuleGroup | RuleAssociation;
 
+export type RuleParent = RuleAssociation | RuleGroup | Query;
+
 export enum Combinator {
   AND = "AND",
   OR = "OR",
@@ -77,9 +79,14 @@ export type Query = {
 };
 
 export type QueryBuilderContextValue = {
-  baseConfig: BaseConfig;
+  queryDataset: QueryDataset;
+  queryConfig: QueryConfig;
   selectedTable: string;
   query: Query;
   setSelectedTable: Dispatch<SetStateAction<string | undefined>>;
   setQuery: Dispatch<SetStateAction<Query | undefined>>;
+};
+
+export type QueryConfig = {
+  defaultCombinator: Combinator;
 };

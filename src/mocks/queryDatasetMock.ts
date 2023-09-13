@@ -1,7 +1,7 @@
-import { BaseConfig, FieldType } from "types";
+import { QueryDataset, FieldType } from "types";
 import { v4 as uuidv4 } from "uuid";
 
-const baseConfig: BaseConfig = {
+const queryDataset: QueryDataset = {
   tables: [
     {
       name: "users",
@@ -90,4 +90,4 @@ const baseConfig: BaseConfig = {
   ],
 };
 
-export { baseConfig };
+export { queryDataset };
