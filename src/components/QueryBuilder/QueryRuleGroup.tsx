@@ -23,11 +23,14 @@ type Props = {
 };
 
 const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
-  const { associations, removeAssociation, addAssociation } = useQueryBuilder();
+  const { getAssociationsForRule, removeAssociation, addAssociation } =
+    useQueryBuilder();
   const newRuleGroup = {
     ...ruleGroup,
     rules: [...ruleGroup.rules],
   };
+
+  const associations = getAssociationsForRule(ruleGroup.id);
 
   const handleCombinatorChange = (newCombinator: Combinator) => {
     newRuleGroup.combinator = newCombinator;
@@ -133,7 +136,7 @@ const QueryRuleGroup = ({ ruleGroup, onChange, onDelete }: Props) => {
           <Text>Associated to a </Text>
           <AssociationSelect
             associations={associations}
-            value={ruleGroup.table}
+            value={ruleGroup.associationId}
             onChange={handleAssociationChange}
           />
           <Text>where... </Text>

@@ -22,13 +22,36 @@ const useQueryBuilder = () => {
     }));
   }, [baseConfig?.tables]);
 
-  const associations = useMemo(() => {
-    if (!selectedTable || !baseConfig?.associations) return [];
+  const getAssociationsForRule = useCallback(
+    (ruleId?: string) => {
+      if (!selectedTable || !baseConfig?.associations) return [];
 
-    return baseConfig?.associations.filter(
-      ({ fromTable }) => fromTable === selectedTable
-    );
-  }, [selectedTable, baseConfig?.associations]);
+      const tables = [selectedTable];
+
+      let ruleAssociationId: string | undefined;
+
+      for (const rule of query?.rules || []) {
+        if (rule.id === ruleId) {
+          if (rule.type === "RuleAssociation")
+            ruleAssociationId = rule.associationId;
+          break;
+        }
+        if (rule.type === "Rule") continue;
+        if (tables.includes(rule.table)) continue;
+
+        tables.push(rule.table);
+      }
+
+      return baseConfig?.associations.filter(
+        ({ fromTable, id }) =>
+          tables.includes(fromTable) &&
+          !query?.associations.find(
+            ({ id: qId }) => qId === id && qId !== ruleAssociationId
+          )
+      );
+    },
+    [selectedTable, baseConfig?.associations, query?.rules, query?.associations]
+  );
 
   const removeAssociation = useCallback(
     (associationId: string) => {
@@ -50,7 +73,9 @@ const useQueryBuilder = () => {
     (associationId: string) => {
       if (!query) return;
 
-      const association = associations.find(({ id }) => id === associationId);
+      const association = baseConfig?.associations.find(
+        ({ id }) => id === associationId
+      );
 
       if (!association) return;
 
@@ -61,7 +86,7 @@ const useQueryBuilder = () => {
         associations: newAssociations,
       });
     },
-    [query, setQuery, associations]
+    [query, setQuery, baseConfig?.associations]
   );
 
   const getTableFields = useCallback(
@@ -101,7 +126,7 @@ const useQueryBuilder = () => {
 
   return {
     tables,
-    associations,
+    getAssociationsForRule,
     selectedTable,
     setSelectedTable,
     getTableFields,

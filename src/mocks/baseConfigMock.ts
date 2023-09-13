@@ -43,6 +43,32 @@ const baseConfig: BaseConfig = {
           name: "buyer_id",
           label: "Buyer ID",
         },
+        {
+          type: FieldType.Number,
+          name: "product_id",
+          label: "Product ID",
+        },
+      ],
+    },
+    {
+      name: "products",
+      label: "Products",
+      fields: [
+        {
+          type: FieldType.String,
+          name: "product_name",
+          label: "Product Name",
+        },
+        {
+          type: FieldType.Number,
+          name: "price",
+          label: "Price",
+        },
+        {
+          type: FieldType.Number,
+          name: "id",
+          label: "Product ID",
+        },
       ],
     },
   ],
@@ -53,6 +79,13 @@ const baseConfig: BaseConfig = {
       fromColumn: "id",
       toTable: "orders",
       toColumn: "buyer_id",
+    },
+    {
+      id: uuidv4(),
+      fromTable: "orders",
+      fromColumn: "product_id",
+      toTable: "products",
+      toColumn: "id",
     },
   ],
 };

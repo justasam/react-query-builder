@@ -23,7 +23,7 @@ const QueryBuilder = () => {
     selectedTable,
     query,
     setQuery,
-    associations,
+    getAssociationsForRule,
     removeAssociation,
     addAssociation,
   } = useQueryBuilder();
@@ -90,7 +90,9 @@ const QueryBuilder = () => {
   };
 
   const handleAddNewRuleAssociation = () => {
-    const association = associations[0];
+    const association = getAssociationsForRule().filter(
+      (association) => !newQuery.associations.includes(association)
+    )[0];
 
     if (!association) return;
 
