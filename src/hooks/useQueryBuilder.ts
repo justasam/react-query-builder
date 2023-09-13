@@ -2,42 +2,36 @@ import { useCallback, useContext, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { QueryBuilderContext } from "containers";
-import { Combinator } from "types";
+import { RuleParent, Combinator, AnyRule, Query, RuleAssociation } from "types";
+import { appendOrCreate } from "utils";
+import {
+  generateAssociationRuleGroup,
+  generateRule,
+  generateRuleGroup,
+} from "data/factories";
 
 const useQueryBuilder = () => {
   const {
-    baseConfig,
+    queryDataset,
     selectedTable,
     setSelectedTable: setSelectedTableContext,
     query,
     setQuery,
+    queryConfig,
   } = useContext(QueryBuilderContext);
 
   const tables = useMemo(() => {
-    if (!baseConfig?.tables) return [];
+    if (!queryDataset?.tables) return [];
 
-    return baseConfig.tables.map((table) => ({
+    return queryDataset.tables.map((table) => ({
       value: table.name,
       label: table.label || table.name,
     }));
-  }, [baseConfig?.tables]);
-
-  const tablesInQuery = useMemo(() => {
-    if (!query?.rules) return [];
-
-    const tables: string[] = [];
-
-    for (const rule of query.rules) {
-      if (tables.includes(rule.table)) continue;
-      tables.push(rule.table);
-    }
-
-    return tables;
-  }, [query?.rules]);
+  }, [queryDataset?.tables]);
 
   const getAssociationsForRule = useCallback(
     (ruleId?: string) => {
-      if (!selectedTable || !baseConfig?.associations) return [];
+      if (!selectedTable || !queryDataset?.associations) return [];
 
       const tables = [selectedTable];
 
@@ -55,7 +49,7 @@ const useQueryBuilder = () => {
         tables.push(rule.table);
       }
 
-      return baseConfig?.associations.filter(
+      return queryDataset?.associations.filter(
         ({ fromTable, id }) =>
           tables.includes(fromTable) &&
           !query?.associations.find(
@@ -63,52 +57,49 @@ const useQueryBuilder = () => {
           )
       );
     },
-    [selectedTable, baseConfig?.associations, query?.rules, query?.associations]
+    [
+      selectedTable,
+      queryDataset?.associations,
+      query?.rules,
+      query?.associations,
+    ]
   );
 
-  const removeAssociation = useCallback(
-    (associationId: string) => {
-      if (!query) return;
+  const updateAssociation = useCallback(
+    (
+      associationToAddId: string,
+      associationToRemoveId: string,
+      sQuery: Query | undefined = query
+    ) => {
+      if (!sQuery) return;
 
-      const newAssociations = query.associations.filter(
-        ({ id }) => id !== associationId
+      const associationToAdd = queryDataset?.associations.find(
+        ({ id }) => id === associationToAddId
+      );
+
+      if (!associationToAdd) return;
+
+      const newAssociations = [...sQuery.associations, associationToAdd].filter(
+        ({ id }) => id !== associationToRemoveId
       );
 
       setQuery?.({
-        ...query,
+        ...sQuery,
         associations: newAssociations,
       });
+
+      return associationToAdd;
     },
-    [query, setQuery]
-  );
-
-  const addAssociation = useCallback(
-    (associationId: string) => {
-      if (!query) return;
-
-      const association = baseConfig?.associations.find(
-        ({ id }) => id === associationId
-      );
-
-      if (!association) return;
-
-      const newAssociations = [...query.associations, association];
-
-      setQuery?.({
-        ...query,
-        associations: newAssociations,
-      });
-    },
-    [query, setQuery, baseConfig?.associations]
+    [query, queryDataset?.associations, setQuery]
   );
 
   const getTableFields = useCallback(
     (tableName: string) => {
-      const table = baseConfig?.tables.find(({ name }) => name === tableName);
+      const table = queryDataset?.tables.find(({ name }) => name === tableName);
 
       return table?.fields || [];
     },
-    [baseConfig?.tables]
+    [queryDataset?.tables]
   );
 
   const resetQuery = (newTable: string) => {
@@ -137,6 +128,209 @@ const useQueryBuilder = () => {
     setSelectedTableContext?.(table);
   };
 
+  // new
+
+  const availableAssociations = useMemo(() => {
+    if (!query) return [];
+
+    return getAssociationsForRule().filter(
+      (association) => !query.associations.includes(association)
+    );
+  }, [getAssociationsForRule, query]);
+
+  const getRuleById = useCallback((id: string, sQuery: Query) => {
+    if (sQuery.id === id) return sQuery;
+
+    if (!sQuery.rules) return null;
+
+    return sQuery.rules.find((rule) => {
+      if (rule.id === id) return true;
+
+      if (!("rules" in rule)) return false;
+
+      return rule.rules?.find((subRule) => subRule.id === id);
+    });
+  }, []);
+
+  const getParentRule = useCallback(
+    (ruleId: string, sQuery: Query): RuleParent | undefined => {
+      if (!sQuery) return undefined;
+      // Query has no parent rule
+      if (sQuery.id === ruleId) return undefined;
+      if (!sQuery.rules) return undefined;
+
+      if (sQuery.rules.find((rule) => rule.id === ruleId)) return sQuery;
+
+      return sQuery.rules.find((rule) => {
+        if (!("rules" in rule)) return false;
+
+        return rule.rules?.find((subRule) => subRule.id === ruleId);
+      }) as RuleParent | undefined;
+    },
+    []
+  );
+
+  const getDependantAssociationIds = useCallback(
+    (associationId: string, sQuery: Query) => {
+      if (!sQuery) return;
+
+      const association = sQuery.associations.find(
+        ({ id }) => id === associationId
+      );
+
+      if (!association) return;
+
+      return sQuery.associations
+        .filter(
+          ({ fromTable, id }) =>
+            fromTable === association.toTable && id !== associationId
+        )
+        .map(({ id }) => id);
+    },
+    []
+  );
+
+  const addQueryRule = useCallback(
+    (parentId: string, ruleType: AnyRule["type"]) => {
+      if (!query || !queryConfig) return;
+
+      const newQuery = { ...query };
+
+      const parent = getRuleById(parentId, newQuery);
+
+      if (!parent || !("rules" in parent)) {
+        return;
+      }
+
+      let ruleToAdd: AnyRule;
+
+      switch (ruleType) {
+        case "RuleGroup":
+          ruleToAdd = generateRuleGroup(
+            parent.table,
+            queryConfig.defaultCombinator
+          );
+          break;
+        case "RuleAssociation":
+          const availableAssociation = availableAssociations[0];
+          if (!availableAssociation) return;
+
+          ruleToAdd = generateAssociationRuleGroup(
+            availableAssociation.toTable,
+            availableAssociation.id,
+            queryConfig.defaultCombinator
+          );
+          newQuery.associations.push(availableAssociation);
+          break;
+        case "Rule":
+          ruleToAdd = generateRule(parent.table);
+      }
+
+      parent.rules = appendOrCreate(parent.rules, ruleToAdd);
+      setQuery?.(newQuery);
+    },
+    [query, setQuery, getRuleById, queryConfig, availableAssociations]
+  );
+
+  const deleteQueryRule = useCallback(
+    (ruleId: string, sQuery?: Query) => {
+      if (!query) return;
+
+      const newQuery = sQuery || { ...query };
+
+      const rule = getRuleById(ruleId, newQuery);
+      const parentRule = getParentRule(ruleId, newQuery);
+
+      if (!rule || !parentRule) return;
+
+      if ("associationId" in rule) {
+        // remove association and it's dependant associations / association rules
+        const dependantAssociationIds = getDependantAssociationIds(
+          rule.associationId,
+          newQuery
+        );
+
+        if (dependantAssociationIds) {
+          dependantAssociationIds.forEach((id) => {
+            const ruleToDeleteId = newQuery.rules.find(
+              (rule) =>
+                rule.type === "RuleAssociation" && rule.associationId === id
+            )?.id;
+
+            if (ruleToDeleteId) deleteQueryRule(ruleToDeleteId, newQuery);
+          });
+        }
+
+        parentRule.rules = parentRule.rules.filter((r) => r.id !== ruleId);
+        newQuery.associations = newQuery.associations.filter(
+          ({ id }) =>
+            id !== rule.associationId && !dependantAssociationIds?.includes(id)
+        );
+      } else {
+        parentRule.rules = parentRule.rules.filter((r) => r.id !== ruleId);
+      }
+
+      if (sQuery) return;
+
+      setQuery?.(newQuery);
+    },
+    [getParentRule, getRuleById, query, setQuery, getDependantAssociationIds]
+  );
+
+  const updateQueryRule = useCallback(
+    (parentId: string, rule: AnyRule) => {
+      if (!query || !queryConfig) return;
+
+      const newQuery = { ...query };
+
+      const parent = getRuleById(parentId, newQuery);
+
+      if (!parent || !("rules" in parent)) {
+        return;
+      }
+
+      const ruleIndex = parent.rules.findIndex((r) => r.id === rule.id);
+
+      parent.rules[ruleIndex] = rule;
+
+      setQuery?.(newQuery);
+    },
+    [query, setQuery, getRuleById, queryConfig]
+  );
+
+  const updateQuery = useCallback(
+    (newQuery: Query) => {
+      setQuery?.(newQuery);
+    },
+    [setQuery]
+  );
+
+  const updateAssociationRule = useCallback(
+    (parentId: string, rule: RuleAssociation, newAssociationId: string) => {
+      if (!query) return;
+
+      const newQuery = { ...query };
+
+      const updatedAssociation = updateAssociation(
+        newAssociationId,
+        rule.associationId,
+        newQuery
+      );
+
+      if (!updatedAssociation) return;
+
+      updateQueryRule(
+        parentId,
+        generateAssociationRuleGroup(
+          updatedAssociation?.toTable,
+          updatedAssociation.id,
+          rule.combinator
+        )
+      );
+    },
+    [query, updateAssociation, updateQueryRule]
+  );
+
   return {
     tables,
     getAssociationsForRule,
@@ -144,11 +338,12 @@ const useQueryBuilder = () => {
     setSelectedTable,
     getTableFields,
     query,
+    updateAssociationRule,
     resetQuery,
-    setQuery,
-    tablesInQuery,
-    removeAssociation,
-    addAssociation,
+    updateQuery,
+    addQueryRule,
+    updateQueryRule,
+    deleteQueryRule,
   };
 };
 

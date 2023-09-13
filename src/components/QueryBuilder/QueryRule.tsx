@@ -4,16 +4,18 @@ import { DeleteIcon } from "@chakra-ui/icons";
 import FieldSelect from "./FieldSelect";
 import { Field, Rule } from "types";
 import { useMemo, useState } from "react";
-import { useDebounce } from "hooks";
+import { useDebounce, useQueryBuilder } from "hooks";
 import { DEFAULT_VALUE_MAP, INPUT_MAP, OPERATOR_MAP } from "./fieldPresets";
 
 type Props = {
   rule: Rule;
-  onChange: (newRule: Rule) => void;
-  onDelete?: () => void;
+  parentId: string;
+  isDeletable?: boolean;
 };
 
-const QueryRule = ({ rule, onChange, onDelete }: Props) => {
+const QueryRule = ({ rule, parentId, isDeletable = true }: Props) => {
+  const { updateQueryRule, deleteQueryRule } = useQueryBuilder();
+
   const [value, setValue] = useState(rule.value || "");
 
   const newRule = { ...rule };
@@ -21,7 +23,7 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
   useDebounce(
     () => {
       newRule.value = value;
-      onChange(newRule);
+      updateQueryRule(parentId, newRule);
     },
     200,
     [value]
@@ -35,13 +37,17 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
     newRule.value = DEFAULT_VALUE_MAP[field.type];
     setValue(newRule.value);
 
-    onChange(newRule);
+    updateQueryRule(parentId, newRule);
   };
 
   const handleOperatorSelect = (operator: string) => {
     newRule.operator = operator;
 
-    onChange(newRule);
+    updateQueryRule(parentId, newRule);
+  };
+
+  const handleDeleteClick = () => {
+    deleteQueryRule(rule.id);
   };
 
   const renderOperatorSelect = () => {
@@ -101,12 +107,12 @@ const QueryRule = ({ rule, onChange, onDelete }: Props) => {
           {renderOperatorSelect()}
           {renderInput()}
         </HStack>
-        {onDelete ? (
+        {isDeletable ? (
           <IconButton
             aria-label="Delete data"
             variant="ghost"
             icon={<DeleteIcon />}
-            onClick={onDelete}
+            onClick={handleDeleteClick}
           />
         ) : null}
       </HStack>
