@@ -1,5 +1,5 @@
 import { ChakraProvider, Container, Spacer } from "@chakra-ui/react";
-import { QueryBuilder, TableSelect } from "components";
+import { QueryBuilder, TableFlow, TableSelect } from "components";
 import { QueryBuilderProvider } from "containers";
 import { initialQuery, queryDataset } from "mocks";
 
@@ -14,14 +14,7 @@ function App() {
         mt="8"
         mb="8"
       >
-        <QueryBuilderProvider
-          queryDataset={queryDataset}
-          initialQuery={initialQuery}
-        >
-          <TableSelect />
-          <Spacer mt="8" />
-          <QueryBuilder />
-        </QueryBuilderProvider>
+        <TableFlow />
       </Container>
     </ChakraProvider>
   );
